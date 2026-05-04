@@ -30,8 +30,14 @@ namespace cartservice
             string spannerProjectId = Configuration["SPANNER_PROJECT"];
             string spannerConnectionString = Configuration["SPANNER_CONNECTION_STRING"];
             string alloyDBConnectionString = Configuration["ALLOYDB_PRIMARY_IP"];
+            string postgresConnectionString = Configuration["POSTGRES_CONN_STRING"];
 
-            if (!string.IsNullOrEmpty(redisAddress))
+            if (!string.IsNullOrEmpty(postgresConnectionString))
+            {
+                Console.WriteLine("Creating PostgreSQL cart store");
+                services.AddSingleton<ICartStore, PostgresCartStore>();
+            }
+            else if (!string.IsNullOrEmpty(redisAddress))
             {
                 services.AddStackExchangeRedisCache(options =>
                 {

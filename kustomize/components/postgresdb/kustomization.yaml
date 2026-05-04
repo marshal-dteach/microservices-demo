@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+- postgres-cart.yaml
+
+patches:
+# cartservice - replace REDIS_ADDR with POSTGRES_CONN_STRING
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: cartservice
+    spec:
+      template:
+        spec:
+          containers:
+            - name: server
+              env:
+              - name: REDIS_ADDR
+                $patch: delete
+              - name: POSTGRES_CONN_STRING
+                value: "Host=postgres-cart;Port=5432;Database=cart;Username=cartuser;Password=cartpass"
+# redis - remove the redis-cart Deployment
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: redis-cart
+    $patch: delete
+# redis - remove the redis-cart Service
+- patch: |-
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: redis-cart
+    $patch: delete
